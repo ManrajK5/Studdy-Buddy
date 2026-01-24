@@ -16,7 +16,7 @@ export function BentoCard({
   return (
     <section
       className={cn(
-        "rounded-3xl border border-slate-100 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        "flex h-full flex-col rounded-3xl border border-slate-100 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md",
         className,
       )}
     >
@@ -29,7 +29,7 @@ export function BentoCard({
         </div>
         {right ? <div className="shrink-0">{right}</div> : null}
       </header>
-      <div className="px-6 pb-6 pt-4">{children}</div>
+      <div className="min-h-0 flex-1 px-6 pb-6 pt-4">{children}</div>
     </section>
   );
 }

@@ -15,8 +15,12 @@ const mono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Studdy Buddy",
+  title: "Study Buddy",
   description: "Syllabus parser + bento dashboard + calendar sync",
+  icons: {
+    icon: [{ url: "/study-buddy.png", type: "image/png" }],
+    apple: [{ url: "/study-buddy.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +34,7 @@ export default function RootLayout({
         <div className="relative min-h-screen">
           <DotGridBackground />
           <AppNav />
-          <main className="relative mx-auto w-full max-w-6xl px-6 py-10">
+          <main className="relative mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
             {children}
           </main>
         </div>

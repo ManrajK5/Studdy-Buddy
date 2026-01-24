@@ -6,6 +6,21 @@ import { batchCreateGoogleCalendarEvents } from "@/lib/googleCalendar";
 import { createBrowserSupabaseClient } from "@/lib/supabaseClient";
 import { CalendarPlus, Wand2, Database } from "lucide-react";
 
+function toFriendlySaveError(err: unknown) {
+  const raw = err instanceof Error ? err.message : String(err);
+  const msg = raw.toLowerCase();
+
+  if (msg.includes("auth session missing") || msg.includes("jwt") || msg.includes("session")) {
+    return "Please sign in to save tasks.";
+  }
+
+  if (msg.includes("missing next_public_supabase")) {
+    return "Supabase isn’t configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.";
+  }
+
+  return raw || "Save failed.";
+}
+
 export function SyllabusParser() {
   const [text, setText] = useState("");
   const [pending, startTransition] = useTransition();
@@ -120,7 +135,7 @@ export function SyllabusParser() {
       if (insertError) throw insertError;
       setSaveStatus(`Saved ${payload.length} tasks to Supabase.`);
     } catch (e) {
-      setSaveStatus(e instanceof Error ? e.message : "Save failed.");
+      setSaveStatus(toFriendlySaveError(e));
     }
   }
 

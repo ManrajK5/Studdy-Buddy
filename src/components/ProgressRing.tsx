@@ -2,11 +2,15 @@ import { cn } from "@/lib/utils";
 
 export function ProgressRing({
   value,
-  label = "Team Workload",
+  label = "Progress",
+  caption = "Stay on track.",
+  centerLabel = "progress",
   className,
 }: {
   value: number; // 0..1
   label?: string;
+  caption?: string;
+  centerLabel?: string;
   className?: string;
 }) {
   const clamped = Math.max(0, Math.min(1, value));
@@ -46,16 +50,14 @@ export function ProgressRing({
             <div className="text-xl font-semibold text-slate-900">
               {Math.round(clamped * 100)}%
             </div>
-            <div className="text-[11px] text-slate-500">load</div>
+            <div className="text-[11px] text-slate-500">{centerLabel}</div>
           </div>
         </div>
       </div>
 
       <div>
         <div className="text-sm font-semibold text-slate-900">{label}</div>
-        <div className="mt-1 text-xs text-slate-500">
-          Keep an eye on overload.
-        </div>
+        <div className="mt-1 text-xs text-slate-500">{caption}</div>
       </div>
     </div>
   );

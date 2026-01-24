@@ -37,11 +37,16 @@ export default function FocusPage() {
         </div>
         <div className="md:col-span-5">
           <BentoCard
-            title="Team Workload"
-            subtitle="Minimal progress ring"
+            title="Weekly Progress"
+            subtitle="A quick pulse check"
             className="bg-white/60 backdrop-blur-md"
           >
-            <ProgressRing value={0.75} />
+            <ProgressRing
+              value={0.75}
+              label="Weekly Progress"
+              caption="Small wins add up."
+              centerLabel="done"
+            />
           </BentoCard>
         </div>
         <div className="md:col-span-7">

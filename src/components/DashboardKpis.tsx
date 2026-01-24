@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { CalendarCheck, Flame } from "lucide-react";
-import { ProgressRing } from "@/components/ProgressRing";
+import { BarChart3, CalendarCheck, Flame } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabaseClient";
 
 type AssignmentRow = {
@@ -51,16 +50,57 @@ function KpiTile({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <div className="flex flex-col rounded-3xl border border-slate-100 bg-white px-4 py-3 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
           {icon}
           <span>{label}</span>
         </div>
         {right}
       </div>
-      <div className="mt-3 text-2xl font-semibold text-slate-900">{value}</div>
+      <div className="mt-2 text-xl font-semibold text-slate-900">{value}</div>
     </div>
+  );
+}
+
+function MiniProgressRing({ value }: { value: number }) {
+  const clamped = Math.max(0, Math.min(1, value));
+  const size = 28;
+  const stroke = 4;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const dash = c * clamped;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="block"
+      aria-label={`Progress ${Math.round(clamped * 100)}%`}
+      role="img"
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        strokeWidth={stroke}
+        className="fill-none stroke-slate-100"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        className="fill-none stroke-slate-900"
+        style={{
+          strokeDasharray: `${dash} ${c - dash}`,
+          transform: "rotate(-90deg)",
+          transformOrigin: "50% 50%",
+        }}
+      />
+    </svg>
   );
 }
 
@@ -145,8 +185,13 @@ export function DashboardKpis() {
         <KpiTile
           label="Weekly Progress"
           value={weeklyProgress.label}
-          icon={<ProgressRing value={weeklyProgress.ratio} />}
-          right={<span className="text-xs text-slate-400">on track</span>}
+          icon={<BarChart3 className="h-4 w-4" />}
+          right={
+            <div className="flex items-center gap-2">
+              <MiniProgressRing value={weeklyProgress.ratio} />
+              <span className="text-xs text-slate-400">this week</span>
+            </div>
+          }
         />
       </div>
       {status ? (

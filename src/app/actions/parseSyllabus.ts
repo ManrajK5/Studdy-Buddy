@@ -47,11 +47,13 @@ export async function parseSyllabusAction(formData: FormData) {
 
   const system =
     "You are a parser. Return ONLY valid JSON that matches the requested schema. " +
-    "Dates must be ISO-8601 strings. If only a day is known, use YYYY-MM-DD.";
+    "Dates must be ISO-8601 strings. If only a day is known, use YYYY-MM-DD. " +
+    "The summary MUST equal the counts of events by type (do not guess).";
 
   const user =
     "Parse this syllabus into JSON with shape: " +
-    '{"summary":{"quizzes":3,"assignments":5,"exams":2},"events":[{"title":"...","type":"quiz|assignment|exam","date":"YYYY-MM-DD or ISO datetime","description":"..."}]}.\n\n' +
+    '{"summary":{"quizzes":0,"assignments":0,"exams":0},"events":[{"title":"...","type":"quiz|assignment|exam","date":"YYYY-MM-DD or ISO datetime","description":"..."}]}.\n' +
+    "Rules: summary counts must be derived from events; if there are no quizzes, quizzes must be 0.\n\n" +
     `SYLLABUS:\n${syllabusText}`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -103,5 +105,22 @@ export async function parseSyllabusAction(formData: FormData) {
     };
   }
 
-  return { ok: true as const, data: validated.data };
+  // Ensure the confirmation summary always matches the parsed events.
+  const computedSummary = validated.data.events.reduce(
+    (acc, e) => {
+      if (e.type === "quiz") acc.quizzes += 1;
+      else if (e.type === "assignment") acc.assignments += 1;
+      else if (e.type === "exam") acc.exams += 1;
+      return acc;
+    },
+    { quizzes: 0, assignments: 0, exams: 0 },
+  );
+
+  return {
+    ok: true as const,
+    data: {
+      ...validated.data,
+      summary: computedSummary,
+    },
+  };
 }

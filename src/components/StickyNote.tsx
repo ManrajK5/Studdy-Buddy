@@ -25,7 +25,7 @@ export function StickyNote({
       <div className="px-6 pt-6">
         <div className="text-sm font-semibold text-slate-900">{label}</div>
         <div className="mt-1 text-xs text-slate-500">
-          A quick scratchpad for your team.
+          A quick scratchpad for your day.
         </div>
       </div>
       <div className="px-6 pb-6 pt-4">

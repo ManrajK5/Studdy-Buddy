@@ -18,10 +18,22 @@ function formatDateLocal(date: Date) {
   return `${y}-${m}-${d}`;
 }
 
-export function TodaysTasks() {
+export function TodaysTasks({
+  composerOpen,
+  onComposerOpenChange,
+}: {
+  composerOpen?: boolean;
+  onComposerOpenChange?: (open: boolean) => void;
+} = {}) {
   const [items, setItems] = useState<AssignmentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const [internalComposerOpen, setInternalComposerOpen] = useState(false);
+  const isComposerOpen = composerOpen ?? internalComposerOpen;
+  const setComposerOpen = onComposerOpenChange ?? setInternalComposerOpen;
 
   useEffect(() => {
     let mounted = true;
@@ -53,8 +65,76 @@ export function TodaysTasks() {
     };
   }, []);
 
+  async function addTask() {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+
+    setSaving(true);
+    setStatus(null);
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      const userId = sessionData.session?.user.id;
+      if (!userId) {
+        setStatus("Sign in to add tasks.");
+        return;
+      }
+
+      const today = formatDateLocal(new Date());
+      const { data, error } = await supabase
+        .from("assignments")
+        .insert({
+          user_id: userId,
+          title: trimmed,
+          type: "assignment",
+          due_date: today,
+        })
+        .select("id,title,completed_at,due_date")
+        .single();
+
+      if (error) throw error;
+      if (data) setItems((prev) => [data as AssignmentRow, ...prev]);
+
+      setTitle("");
+      setComposerOpen(false);
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : "Failed to add task.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="flex h-full flex-col gap-3">
+      {isComposerOpen ? (
+        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+          <div className="flex items-center gap-2">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Add a task due today…"
+              className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addTask();
+              }}
+            />
+            <button
+              type="button"
+              onClick={addTask}
+              disabled={saving || !title.trim()}
+              className="inline-flex h-9 items-center rounded-xl bg-slate-900 px-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {saving ? "Adding…" : "Add"}
+            </button>
+          </div>
+          <div className="mt-2 text-[11px] text-slate-500">Creates an item due today.</div>
+        </div>
+      ) : null}
+
+      <div className="min-h-0 flex-1 space-y-3 overflow-auto">
       {loading ? (
         <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
           Loading today’s tasks…
@@ -87,6 +167,8 @@ export function TodaysTasks() {
           </div>
         );
       })}
+
+      </div>
 
       {status ? <div className="text-xs text-slate-500">{status}</div> : null}
     </div>
