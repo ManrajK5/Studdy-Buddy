@@ -12,6 +12,65 @@ export type ParsedSyllabusEvent = {
   description: string;
 };
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRateLimitError(payloadText: string) {
+  try {
+    const parsed = JSON.parse(payloadText) as {
+      error?: { errors?: Array<{ reason?: string }>; status?: string };
+    };
+    const reason = parsed.error?.errors?.[0]?.reason;
+    return reason === "rateLimitExceeded" || reason === "userRateLimitExceeded";
+  } catch {
+    return false;
+  }
+}
+
+async function readResponseText(res: Response) {
+  try {
+    return await res.text();
+  } catch {
+    return "";
+  }
+}
+
+async function fetchWithRetry(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  {
+    maxRetries,
+    baseDelayMs,
+  }: {
+    maxRetries: number;
+    baseDelayMs: number;
+  },
+) {
+  let attempt = 0;
+  while (true) {
+    const res = await fetch(input, init);
+    if (res.ok) return res;
+
+    const payloadText = await readResponseText(res);
+    const retryable =
+      res.status === 429 ||
+      (res.status === 403 && isRateLimitError(payloadText)) ||
+      res.status >= 500;
+
+    if (!retryable || attempt >= maxRetries) {
+      throw new Error(
+        `Google Calendar insert failed (${res.status}): ${payloadText}`,
+      );
+    }
+
+    const jitter = 0.6 + Math.random() * 0.8; // 0.6..1.4
+    const delay = Math.round(baseDelayMs * 2 ** attempt * jitter);
+    await sleep(delay);
+    attempt += 1;
+  }
+}
+
 function isDateOnly(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
@@ -61,15 +120,30 @@ export async function batchCreateGoogleCalendarEvents({
   events: ParsedSyllabusEvent[];
   timeZone?: string;
 }) {
-  // Note: This is a simple batch (parallel requests), not Google's legacy multipart /batch endpoint.
+  // Note: This is not Google's legacy multipart /batch endpoint.
+  // We intentionally limit concurrency + retry on rate limits.
   const mapped = events.map((e) => mapParsedEventToGoogle(e, timeZone));
 
-  const results = await Promise.all(
-    mapped.map(async (ev) => {
-      const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
-          calendarId,
-        )}/events`,
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
+    calendarId,
+  )}/events`;
+
+  const concurrency = 3;
+  const maxRetries = 6;
+  const baseDelayMs = 500;
+
+  const results: unknown[] = [];
+  let cursor = 0;
+
+  async function worker() {
+    while (true) {
+      const i = cursor;
+      cursor += 1;
+      if (i >= mapped.length) return;
+
+      const ev = mapped[i];
+      const res = await fetchWithRetry(
+        url,
         {
           method: "POST",
           headers: {
@@ -78,16 +152,16 @@ export async function batchCreateGoogleCalendarEvents({
           },
           body: JSON.stringify(ev),
         },
+        { maxRetries, baseDelayMs },
       );
+      results[i] = await res.json();
+    }
+  }
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`Google Calendar insert failed (${res.status}): ${text}`);
-      }
-
-      return res.json();
-    }),
+  const workers = Array.from({ length: Math.min(concurrency, mapped.length) }, () =>
+    worker(),
   );
+  await Promise.all(workers);
 
   return results;
 }
