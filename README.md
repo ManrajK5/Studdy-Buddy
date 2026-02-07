@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Study Buddy
 
-## Getting Started
+Study Buddy is a small app I built to solve a real problem for my friends and me: keeping up with a bunch of class deadlines without living in my syllabus PDF.
 
-First, run the development server:
+You paste (or drop) your syllabus, Study Buddy extracts quizzes/assignments/exams, lets you quickly review/edit them, then syncs everything to Google Calendar with reminders so you stay on track.
+
+## What it does
+
+- **Syllabus → tasks**: Paste text or upload `.txt`, `.md`, or `.pdf` and extract key dated items.
+- **Review before saving**: Edit titles/types/dates before saving to Tasks.
+- **Tasks board**: Organize work and keep track of what’s done.
+- **Google Calendar sync**: One-click sync with configurable reminder timing.
+
+## Tech
+
+- Next.js (App Router) + TypeScript + Tailwind
+- Supabase (Auth + Postgres)
+- Google Calendar API (uses the Google OAuth token from Supabase auth)
+
+## Local setup
+
+### 1) Install deps
+
+```bash
+npm install
+```
+
+### 2) Configure environment variables
+
+Create a `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+OPENAI_API_KEY=...
+```
+
+Notes:
+- Supabase values come from your Supabase project settings.
+- `OPENAI_API_KEY` is used by the syllabus parsing server action.
+
+### 3) Supabase database
+
+Run the SQL migrations in `supabase/migrations/` in your Supabase SQL editor.
+
+At minimum you’ll want the `assignments` table from the init migrations. If you already have data, apply migrations carefully.
+
+### 4) Google Calendar sync
+
+In Supabase Auth, enable **Google** as a provider and ensure Calendar scope is granted (so the app can create events).
+
+### 5) Start dev
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Reminders
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Reminders are handled through Google Calendar event reminders.
+You can choose the default reminder timing in the UI (stored in localStorage).
 
-## Learn More
+## Deploying
 
-To learn more about Next.js, take a look at the following resources:
+This repo is set up for Vercel-style deployments (push to GitHub → Vercel deploy).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Why I built it
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+I wanted something that’s faster than manually copying due dates and more reliable than “I’ll remember it later.”
+If you’re the kind of person who collects 5 syllabuses at the start of term and promises you’ll plan them… this is for you.
