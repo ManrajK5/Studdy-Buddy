@@ -3,7 +3,7 @@ export default function Home() {
     <section className="mx-auto flex max-w-3xl flex-col gap-6 pt-6 sm:pt-10">
       <div className="space-y-3">
         <h1 className="text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-          Study Buddy
+          Studdy Buddy
         </h1>
         <p className="text-pretty text-base text-slate-600 sm:text-lg">
           Paste or drop your syllabus, turn it into tasks, and sync deadlines to Google Calendar with

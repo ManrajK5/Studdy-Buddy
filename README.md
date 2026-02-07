@@ -1,8 +1,8 @@
-# Study Buddy
+# Studdy Buddy
 
-Study Buddy is a small app I built to solve a real problem for my friends and me: keeping up with a bunch of class deadlines without living in my syllabus PDF.
+Studdy Buddy is a small app I built to solve a real problem for my friends and me: keeping up with a bunch of class deadlines without living in my syllabus PDF.
 
-You paste (or drop) your syllabus, Study Buddy extracts quizzes/assignments/exams, lets you quickly review/edit them, then syncs everything to Google Calendar with reminders so you stay on track.
+You paste (or drop) your syllabus, Studdy Buddy extracts quizzes/assignments/exams, lets you quickly review/edit them, then syncs everything to Google Calendar with reminders so you stay on track.
 
 ## What it does
 

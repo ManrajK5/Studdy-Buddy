@@ -10,7 +10,7 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-slate-900">Use of the app</h2>
           <p>
-            Study Buddy is provided as-is to help you organize school deadlines. You are responsible for verifying the extracted
+            Studdy Buddy is provided as-is to help you organize school deadlines. You are responsible for verifying the extracted
             dates and details.
           </p>
         </section>
@@ -25,7 +25,7 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-slate-900">Third-party services</h2>
           <p>
-            Study Buddy integrates with services like Google Calendar and Supabase. Their terms and policies also apply.
+            Studdy Buddy integrates with services like Google Calendar and Supabase. Their terms and policies also apply.
           </p>
         </section>
 

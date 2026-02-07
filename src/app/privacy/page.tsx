@@ -8,9 +8,9 @@ export default function PrivacyPage() {
 
       <div className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 text-sm text-slate-700 shadow-sm">
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-slate-900">What Study Buddy does</h2>
+          <h2 className="text-sm font-semibold text-slate-900">What Studdy Buddy does</h2>
           <p>
-            Study Buddy helps you turn syllabus text into tasks and optionally sync them to Google Calendar with reminders.
+            Studdy Buddy helps you turn syllabus text into tasks and optionally sync them to Google Calendar with reminders.
           </p>
         </section>
 
@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-slate-900">Google Calendar access</h2>
           <p>
-            If you connect Google, Study Buddy requests permission to create calendar events on your behalf. We use that access to
+            If you connect Google, Studdy Buddy requests permission to create calendar events on your behalf. We use that access to
             sync the tasks you choose to Google Calendar.
           </p>
         </section>
