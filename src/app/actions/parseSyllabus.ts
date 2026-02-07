@@ -20,6 +20,29 @@ const ParsedSyllabusSchema = z.object({
 
 export type ParsedSyllabus = z.infer<typeof ParsedSyllabusSchema>;
 
+function normalizeLikelyWrongYear(iso: string, now: Date): string {
+  // If the model guessed a year far in the past (common when the syllabus omits a year),
+  // rewrite it to the current year while preserving month/day.
+  // Example: 2024-02-05 -> 2026-02-05
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
+  if (!m) return iso;
+
+  const year = Number(m[1]);
+  const month = m[2];
+  const day = m[3];
+  const rest = m[4] ?? "";
+
+  const currentYear = now.getFullYear();
+  if (!Number.isFinite(year)) return iso;
+
+  // Only rewrite when the year is clearly stale (2+ years behind).
+  if (year <= currentYear - 2) {
+    return `${currentYear}-${month}-${day}${rest}`;
+  }
+
+  return iso;
+}
+
 function extractJson(content: string) {
   // Tolerate accidental wrapping.
   const firstBrace = content.indexOf("{");
@@ -36,6 +59,9 @@ export async function parseSyllabusAction(formData: FormData) {
     return { ok: false as const, error: "Paste your syllabus first." };
   }
 
+  const now = new Date();
+  const todayIso = now.toISOString().slice(0, 10);
+
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   if (!apiKey) {
@@ -48,12 +74,16 @@ export async function parseSyllabusAction(formData: FormData) {
   const system =
     "You are a parser. Return ONLY valid JSON that matches the requested schema. " +
     "Dates must be ISO-8601 strings. If only a day is known, use YYYY-MM-DD. " +
-    "The summary MUST equal the counts of events by type (do not guess).";
+    `Today is ${todayIso}. If the syllabus does not specify a year, assume the current year. ` +
+    "The summary MUST equal the counts of events by type (do not guess). " +
+    "IMPORTANT: If a course code is mentioned (e.g., CP312, CS101, MATH201), prefix EVERY title with it like 'CP312 - Quiz 1'. " +
+    "Always extract and include the course code in titles when available.";
 
   const user =
     "Parse this syllabus into JSON with shape: " +
     '{"summary":{"quizzes":0,"assignments":0,"exams":0},"events":[{"title":"...","type":"quiz|assignment|exam","date":"YYYY-MM-DD or ISO datetime","description":"..."}]}.\n' +
-    "Rules: summary counts must be derived from events; if there are no quizzes, quizzes must be 0.\n\n" +
+    `Rules: summary counts must be derived from events; if there are no quizzes, quizzes must be 0. Today is ${todayIso}.\n` +
+    `If a course code is found (like CP312, CS101, etc.), prefix each title with it, e.g., "CP312 - Assignment 2".\n\n` +
     `SYLLABUS:\n${syllabusText}`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -106,7 +136,12 @@ export async function parseSyllabusAction(formData: FormData) {
   }
 
   // Ensure the confirmation summary always matches the parsed events.
-  const computedSummary = validated.data.events.reduce(
+  const normalizedEvents = validated.data.events.map((e) => ({
+    ...e,
+    date: normalizeLikelyWrongYear(e.date, now),
+  }));
+
+  const computedSummary = normalizedEvents.reduce(
     (acc, e) => {
       if (e.type === "quiz") acc.quizzes += 1;
       else if (e.type === "assignment") acc.assignments += 1;
@@ -120,6 +155,7 @@ export async function parseSyllabusAction(formData: FormData) {
     ok: true as const,
     data: {
       ...validated.data,
+      events: normalizedEvents,
       summary: computedSummary,
     },
   };

@@ -3,6 +3,10 @@ export type GoogleCalendarInsertableEvent = {
   description?: string;
   start: { date?: string; dateTime?: string; timeZone?: string };
   end: { date?: string; dateTime?: string; timeZone?: string };
+  reminders?: {
+    useDefault: boolean;
+    overrides?: Array<{ method: "popup" | "email"; minutes: number }>;
+  };
 };
 
 export type ParsedSyllabusEvent = {
@@ -114,15 +118,33 @@ export async function batchCreateGoogleCalendarEvents({
   calendarId = "primary",
   events,
   timeZone = "UTC",
+  reminderMinutes,
 }: {
   accessToken: string;
   calendarId?: string;
   events: ParsedSyllabusEvent[];
   timeZone?: string;
+  reminderMinutes?: number | null;
 }) {
   // Note: This is not Google's legacy multipart /batch endpoint.
   // We intentionally limit concurrency + retry on rate limits.
-  const mapped = events.map((e) => mapParsedEventToGoogle(e, timeZone));
+  const mapped = events.map((e) => {
+    const base = mapParsedEventToGoogle(e, timeZone);
+    if (reminderMinutes === undefined) return base;
+    if (reminderMinutes === null) {
+      return {
+        ...base,
+        reminders: { useDefault: false },
+      };
+    }
+    return {
+      ...base,
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: reminderMinutes }],
+      },
+    };
+  });
 
   const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
     calendarId,

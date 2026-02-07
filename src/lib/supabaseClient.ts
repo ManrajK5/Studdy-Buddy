@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 export function createBrowserSupabaseClient() {
-  const url = "https://tcctmwjvfnmcduauifug.supabase.co";
-  const anonKey = "sb_publishable_46IIEf9paJr-8KpDzyL5Pw_x--rep9L";
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
     throw new Error(

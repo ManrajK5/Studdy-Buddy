@@ -53,7 +53,6 @@ export function AppNav() {
             <NavLink href="/dashboard" label="Dashboard" active={pathname === "/dashboard"} />
             <NavLink href="/syllabus" label="Syllabus" active={pathname === "/syllabus"} />
             <NavLink href="/tasks" label="Tasks" active={pathname === "/tasks"} />
-            <NavLink href="/focus" label="Focus" active={pathname === "/focus"} />
           </nav>
         </div>
         <AuthPanel />

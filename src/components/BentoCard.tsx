@@ -16,7 +16,7 @@ export function BentoCard({
   return (
     <section
       className={cn(
-        "flex h-full flex-col rounded-3xl border border-slate-100 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        "flex h-full flex-col rounded-3xl border border-slate-100 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md",
         className,
       )}
     >
