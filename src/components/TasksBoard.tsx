@@ -421,7 +421,7 @@ export function TasksBoard() {
   }, [loadTasks]);
 
   useEffect(() => {
-    // Drop selections for tasks that no longer exist (e.g., after reload/deletes).
+    // Drop selections for tasks that don't exist
     setSelected((prev) => {
       if (!tasks.length) return {};
       const allowed = new Set(tasks.map((t) => t.id));
@@ -469,7 +469,6 @@ export function TasksBoard() {
     if (sortBy === "due") {
       copy.sort((a, b) => a.date.localeCompare(b.date));
     }
-    // "added" order is default from Supabase
     return copy;
   }, [filteredTasks, sortBy]);
 

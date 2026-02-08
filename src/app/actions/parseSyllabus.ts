@@ -21,9 +21,7 @@ const ParsedSyllabusSchema = z.object({
 export type ParsedSyllabus = z.infer<typeof ParsedSyllabusSchema>;
 
 function normalizeLikelyWrongYear(iso: string, now: Date): string {
-  // If the model guessed a year far in the past (common when the syllabus omits a year),
-  // rewrite it to the current year while preserving month/day.
-  // Example: 2024-02-05 -> 2026-02-05
+  // If year looks like it's from past sem, rewrite to curr yr
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
   if (!m) return iso;
 
@@ -44,7 +42,7 @@ function normalizeLikelyWrongYear(iso: string, now: Date): string {
 }
 
 function extractJson(content: string) {
-  // Tolerate accidental wrapping.
+  // In case of wrapping
   const firstBrace = content.indexOf("{");
   const lastBrace = content.lastIndexOf("}");
   if (firstBrace >= 0 && lastBrace >= 0 && lastBrace > firstBrace) {
@@ -135,7 +133,7 @@ export async function parseSyllabusAction(formData: FormData) {
     };
   }
 
-  // Ensure the confirmation summary always matches the parsed events.
+  // Ensure confirmed summary matches parsed event
   const normalizedEvents = validated.data.events.map((e) => ({
     ...e,
     date: normalizeLikelyWrongYear(e.date, now),

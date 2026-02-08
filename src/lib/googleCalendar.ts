@@ -68,7 +68,7 @@ async function fetchWithRetry(
       );
     }
 
-    const jitter = 0.6 + Math.random() * 0.8; // 0.6..1.4
+    const jitter = 0.6 + Math.random() * 0.8;
     const delay = Math.round(baseDelayMs * 2 ** attempt * jitter);
     await sleep(delay);
     attempt += 1;
@@ -104,7 +104,7 @@ export function mapParsedEventToGoogle(
     };
   }
 
-  // Treat as an ISO date-time string if it includes time.
+  // Treat as an ISO date-time string if time is included
   return {
     summary,
     description: e.description,
@@ -126,8 +126,7 @@ export async function batchCreateGoogleCalendarEvents({
   timeZone?: string;
   reminderMinutes?: number | null;
 }) {
-  // Note: This is not Google's legacy multipart /batch endpoint.
-  // We intentionally limit concurrency + retry on rate limits.
+  // Limit concurrency + retry on rate limits
   const mapped = events.map((e) => {
     const base = mapParsedEventToGoogle(e, timeZone);
     if (reminderMinutes === undefined) return base;

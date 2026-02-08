@@ -306,7 +306,7 @@ export function SyllabusParser() {
         return;
       }
 
-      // Check for duplicates (same title + date + type for this user)
+      // Check duplicates
       const { data: existingTasks } = await supabase
         .from("assignments")
         .select("title,due_date,type")

@@ -7,11 +7,10 @@ export default function DashboardPage() {
   return (
     <div>
       <DashboardGreeting />
-
-      {/* Hero: weekly calendar view */}
+      
+      {/* Calendar view at top */}
       <GoogleCalendarCard />
 
-      {/* Bottom row: upcoming tasks + syllabus CTA */}
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-12">
         <div className="md:col-span-8">
           <UpcomingTasks />

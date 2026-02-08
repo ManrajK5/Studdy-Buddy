@@ -1,7 +1,7 @@
 export type ReminderMinutes = number | null;
 
 export const REMINDER_STORAGE_KEY = "study-buddy:reminder-minutes";
-export const DEFAULT_REMINDER_MINUTES: ReminderMinutes = 1440; // 1 day
+export const DEFAULT_REMINDER_MINUTES: ReminderMinutes = 1440;
 
 export const REMINDER_OPTIONS: Array<{ label: string; value: ReminderMinutes }> = [
   { label: "None", value: null },
