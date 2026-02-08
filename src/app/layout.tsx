@@ -17,6 +17,9 @@ const mono = Roboto_Mono({
 export const metadata: Metadata = {
   title: "Studdy Buddy",
   description: "Syllabus parser + bento dashboard + calendar sync",
+  verification: {
+    google: "ceSVdZ03HtkR0LKn9V72kAg8-YtBG72Ni6Dafkz4GKA",
+  },
   icons: {
     icon: [{ url: "/studdy-buddy.png", type: "image/png" }],
     apple: [{ url: "/studdy-buddy.png", type: "image/png" }],
